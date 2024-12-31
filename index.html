@@ -27,15 +27,15 @@
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 4px;
+            padding: 3px;
             text-align: center;
-            font-size: 12px;
+            font-size: 10px;
         }
         th {
             background-color: maroon;
             color: white;
         }
-        input[type="text"], input[type="number"], select {
+        input[type="text"], input[type="password"], input[type="number"], input[type="date"], select {
             width: 80px;
             padding: 3px;
             margin: 3px;
@@ -69,6 +69,32 @@
             padding: 8px;
             font-size: 14px;
         }
+        /* Align Bill No, Customer Name, and Date horizontally */
+        .bill-info {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+        .bill-info div {
+            margin-bottom: 10px;
+        }
+        .bill-info input {
+            width: 150px;
+            font-size: 12px;
+            border: 1px solid #ddd;
+            padding: 5px;
+        }
+        .final-bill-table {
+            margin-top: 5px;
+        }
+
+        /* Footer for "Designed by Syed Hasan Yasir" */
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #888;
+        }
     </style>
 </head>
 <body>
@@ -82,6 +108,24 @@
 
         <div id="invoicePage" style="display: none;">
             <h3>SADIQ ENTERPRISES PVT (LTD)</h3>
+
+            <!-- Bill Number, Customer Name, and Date displayed vertically -->
+            <div class="bill-info">
+                <div>
+                    <label for="billNo">Bill No:</label>
+                    <input type="text" id="billNo" placeholder="Enter Bill No" />
+                </div>
+                <div>
+                    <label for="customerName">Customer Name:</label>
+                    <input type="text" id="customerName" placeholder="Enter Customer Name" />
+                </div>
+                <div>
+                    <label for="date">Date:</label>
+                    <input type="date" id="date" placeholder="Enter Date" />
+                </div>
+            </div>
+
+            <!-- Items Table -->
             <div>
                 <div class="item-row">
                     <div><strong>Item</strong></div>
@@ -96,6 +140,18 @@
                 <button onclick="generateBill()">Generate Final Bill</button>
                 <div id="finalBill" style="display: none;">
                     <h3>SADIQ ENTERPRISES PVT (LTD)</h3>
+                    <!-- Displaying Bill Number, Customer Name, and Date in the Final Bill -->
+                    <div class="bill-info">
+                        <div>
+                            <strong>Bill No: </strong><span id="finalBillNo"></span>
+                        </div>
+                        <div>
+                            <strong>Customer Name: </strong><span id="finalCustomerName"></span>
+                        </div>
+                        <div>
+                            <strong>Date: </strong><span id="finalDate"></span>
+                        </div>
+                    </div>
                     <table class="final-bill-table">
                         <thead>
                             <tr>
@@ -110,6 +166,11 @@
                     <p><strong>Total Bill: </strong><span id="finalTotal"></span></p>
                 </div>
             </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            Designed by Syed Hasan Yasir
         </div>
     </div>
 
@@ -158,6 +219,7 @@
             { name: "Meter Harness CD-100", rate: 170.66 },
             { name: "C-12 Holder", rate: 11.24 },
             { name: "Read Vol Tube", rate: 75.58 },
+            { name: "Fuel Filter Pipe CD70", rate: 41.35 }
         ];
 
         function login() {
@@ -191,55 +253,66 @@
                     <input type="number" class="quantity" value="1" onchange="updateTotal(this)" />
                 </div>
                 <div>
-                    <span class="total">${items[0].rate}</span>
+                    <input type="text" class="total" value="${items[0].rate}" readonly />
                 </div>
             `;
             tableBody.appendChild(row);
         }
 
-        function updateRate(select) {
-            const rateCell = select.closest('.item-row').querySelector('.rate');
-            rateCell.value = select.value;
-            updateTotal(rateCell);
+        function updateRate(selectElement) {
+            const selectedRate = selectElement.value;
+            const selectedItem = selectElement.options[selectElement.selectedIndex];
+            const rateInput = selectElement.closest('.item-row').querySelector('.rate');
+            rateInput.value = selectedRate;
+            updateTotal(rateInput);
         }
 
-        function updateTotal(input) {
-            const row = input.closest('.item-row');
-            const rate = parseFloat(row.querySelector('.rate').value);
-            const quantity = parseInt(row.querySelector('.quantity').value);
-            row.querySelector('.total').innerText = (rate * quantity).toFixed(2);
+        function updateTotal(inputElement) {
+            const rate = parseFloat(inputElement.closest('.item-row').querySelector('.rate').value);
+            const quantity = parseFloat(inputElement.closest('.item-row').querySelector('.quantity').value);
+            const totalInput = inputElement.closest('.item-row').querySelector('.total');
+            const total = rate * quantity;
+            totalInput.value = total.toFixed(2);
         }
 
         function resetBill() {
-            const tableBody = document.getElementById("invoiceBody");
-            tableBody.innerHTML = '';
+            document.getElementById("invoiceBody").innerHTML = "";
             document.getElementById("finalBill").style.display = "none";
         }
 
         function generateBill() {
-            let total = 0;
-            let billHTML = '';
-            const rows = document.getElementById("invoiceBody").children;
+            const billNo = document.getElementById("billNo").value;
+            const customerName = document.getElementById("customerName").value;
+            const date = document.getElementById("date").value;
+            
+            // Display Bill Number, Customer Name, and Date in the final bill
+            document.getElementById("finalBillNo").textContent = billNo;
+            document.getElementById("finalCustomerName").textContent = customerName;
+            document.getElementById("finalDate").textContent = date;
+            
+            const finalBillBody = document.getElementById("finalBillBody");
+            const rows = document.querySelectorAll('#invoiceBody .item-row');
+            let totalAmount = 0;
+            finalBillBody.innerHTML = "";
 
-            for (let row of rows) {
-                const itemName = row.querySelector('select').selectedOptions[0].dataset.name;
-                const rate = parseFloat(row.querySelector('.rate').value);
-                const quantity = parseInt(row.querySelector('.quantity').value);
-                const itemTotal = (rate * quantity).toFixed(2);
-
-                billHTML += `
+            rows.forEach(row => {
+                const itemName = row.querySelector('select').selectedOptions[0].text;
+                const rate = row.querySelector('.rate').value;
+                const quantity = row.querySelector('.quantity').value;
+                const total = row.querySelector('.total').value;
+                
+                finalBillBody.innerHTML += `
                     <tr>
                         <td>${itemName}</td>
                         <td>${rate}</td>
                         <td>${quantity}</td>
-                        <td>${itemTotal}</td>
+                        <td>${total}</td>
                     </tr>
                 `;
-                total += parseFloat(itemTotal);
-            }
+                totalAmount += parseFloat(total);
+            });
 
-            document.getElementById("finalBillBody").innerHTML = billHTML;
-            document.getElementById("finalTotal").innerText = total.toFixed(2);
+            document.getElementById("finalTotal").textContent = totalAmount.toFixed(2);
             document.getElementById("finalBill").style.display = "block";
         }
     </script>
