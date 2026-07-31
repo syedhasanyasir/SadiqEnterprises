@@ -154,7 +154,7 @@
   <!-- Login Page -->
   <div class="login-container" id="loginPage">
     <div class="login-box">
-      <h1>SADIQ ENTERPRISES PVT. (LTD)</h1>
+      <h1>S&C</h1>
       <input type="text" id="username" placeholder="Enter Username" required>
       <input type="password" id="password" placeholder="Enter Password" required>
       <button onclick="login()">Login</button>
@@ -163,7 +163,7 @@
 
   <!-- Billing System -->
   <div class="billing-container" id="billingPage">
-    <h1>SADIQ ENTERPRISES PVT. (LTD) - Billing System</h1>
+    <h1>S&C - Billing System</h1>
     <table>
       <thead>
         <tr>
